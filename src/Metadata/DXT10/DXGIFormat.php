@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bic\Image\DDS\Metadata\DXT10;
 
+use Bic\Image\BMP\Exception\DDSException;
 use Bic\Image\DDS\Metadata\DDSFourCC;
 use Bic\Image\DDS\Metadata\DDSPixelFormat;
 use Bic\Image\DDS\Metadata\PixelFormat\Flag as PixelFormatFlag;
@@ -13,6 +14,7 @@ use Bic\Image\DDS\Metadata\PixelFormat\Flag as PixelFormatFlag;
  * modifiers at the bottom of the page more fully describes each format type.
  *
  * @link https://docs.microsoft.com/en-us/windows/win32/api/dxgiformat/ne-dxgiformat-dxgi_format
+ * @codingStandardsIgnoreStart
  */
 enum DXGIFormat: int
 {
@@ -1107,24 +1109,6 @@ enum DXGIFormat: int
     /**
      * @return bool
      */
-    public function isDepthStencil(): bool
-    {
-        return $this === self::DXGI_FORMAT_R32G8X24_TYPELESS
-            || $this === self::DXGI_FORMAT_D32_FLOAT_S8X24_UINT
-            || $this === self::DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS
-            || $this === self::DXGI_FORMAT_X32_TYPELESS_G8X24_UINT
-            || $this === self::DXGI_FORMAT_D32_FLOAT
-            || $this === self::DXGI_FORMAT_R24G8_TYPELESS
-            || $this === self::DXGI_FORMAT_D24_UNORM_S8_UINT
-            || $this === self::DXGI_FORMAT_R24_UNORM_X8_TYPELESS
-            || $this === self::DXGI_FORMAT_X24_TYPELESS_G8_UINT
-            || $this === self::DXGI_FORMAT_D16_UNORM
-        ;
-    }
-
-    /**
-     * @return bool
-     */
     public function isCompressedBlock(): bool
     {
         return $this === self::DXGI_FORMAT_BC1_TYPELESS
@@ -1152,7 +1136,8 @@ enum DXGIFormat: int
     }
 
     /**
-     * @return int
+     * @return positive-int
+     * @throws DDSException
      */
     public function getBytesPerBlock(): int
     {
@@ -1190,14 +1175,17 @@ enum DXGIFormat: int
             self::DXGI_FORMAT_BC6H_SF16,
             self::DXGI_FORMAT_BC7_TYPELESS,
             self::DXGI_FORMAT_BC7_UNORM,
-            self::DXGI_FORMAT_BC7_UNORM_SRGB => 16
+            self::DXGI_FORMAT_BC7_UNORM_SRGB => 16,
+            default => throw new DDSException(
+                \sprintf('Unable to determine compression block; The %s format is not compressed', $this->name)
+            ),
         };
     }
 
     /**
      * @param DDSPixelFormat $format
-     *
      * @return static
+     * @psalm-suppress UnhandledMatchCondition
      */
     public static function fromPixelFormat(DDSPixelFormat $format): self
     {

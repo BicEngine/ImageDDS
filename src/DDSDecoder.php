@@ -8,7 +8,9 @@ use Bic\Binary\Endianness;
 use Bic\Binary\StreamInterface;
 use Bic\Binary\Type;
 use Bic\Binary\TypedStream;
+use Bic\Image\BMP\Exception\DDSException;
 use Bic\Image\Compression;
+use Bic\Image\CompressionInterface;
 use Bic\Image\DDS\Metadata\DDSHeaderDXT10;
 use Bic\Image\DDS\Metadata\DDSFourCC;
 use Bic\Image\DDS\Metadata\DDSHeader;
@@ -50,6 +52,9 @@ final class DDSDecoder implements DecoderInterface
      * @param StreamInterface $stream
      *
      * @return iterable<ImageInterface>
+     * @throws DDSException
+     *
+     * @psalm-suppress all
      */
     private function read(StreamInterface $stream): iterable
     {
@@ -73,6 +78,7 @@ final class DDSDecoder implements DecoderInterface
         for ($level = 0; $level < $header->mipMapCount && ($width || $height); ++$level) {
             [$width, $height] = [\max($width, 1), \max($height, 1)];
 
+            /** @psalm-var positive-int $size */
             $size = $isCompressed
                 ? (int)((($width + 3) >> 2) * (($height + 3) >> 2) * $blockSize)
                 : (int)($width * $height * $blockSize);
@@ -95,9 +101,12 @@ final class DDSDecoder implements DecoderInterface
      * @param DDSHeader $header
      * @param DDSHeaderDXT10|null $dxt10
      *
-     * @return DDSCompression
+     * @return CompressionInterface
+     * @throws DDSException
+     *
+     * @psalm-suppress PossiblyNullPropertyFetch DXT10 header already defined for FourCC = DX10
      */
-    private static function getCompression(DDSHeader $header, ?DDSHeaderDXT10 $dxt10): DDSCompression
+    private static function getCompression(DDSHeader $header, ?DDSHeaderDXT10 $dxt10): CompressionInterface
     {
         return match ($header->format->fourCC) {
             DDSFourCC::DXT1 => DDSCompression::BC1,
@@ -123,13 +132,13 @@ final class DDSDecoder implements DecoderInterface
                 DXGIFormat::DXGI_FORMAT_BC5_SNORM => DDSCompression::BC5,
                 DXGIFormat::DXGI_FORMAT_BC6H_TYPELESS,
                 DXGIFormat::DXGI_FORMAT_BC6H_UF16,
-                DXGIFormat::DXGI_FORMAT_BC6H_SF16 => DDSCompression::BC5,
+                DXGIFormat::DXGI_FORMAT_BC6H_SF16 => DDSCompression::BC6,
                 DXGIFormat::DXGI_FORMAT_BC7_TYPELESS,
                 DXGIFormat::DXGI_FORMAT_BC7_UNORM,
                 DXGIFormat::DXGI_FORMAT_BC7_UNORM_SRGB => DDSCompression::BC7,
                 default => Compression::NONE,
             },
-            default => throw new \InvalidArgumentException(
+            default => throw new DDSException(
                 \sprintf('%s image format not supported', $header->format->fourCC->name)
             ),
         };
@@ -140,6 +149,10 @@ final class DDSDecoder implements DecoderInterface
      * @param DDSHeaderDXT10|null $dxt10
      *
      * @return PixelFormat
+     * @throws DDSException
+     *
+     * @psalm-suppress PossiblyNullPropertyFetch DXT10 header already defined for FourCC = DX10
+     * @psalm-suppress PossiblyNullArgument      Same
      */
     private static function getPixelFormat(DDSHeader $header, ?DDSHeaderDXT10 $dxt10): PixelFormat
     {
@@ -181,11 +194,11 @@ final class DDSDecoder implements DecoderInterface
                 DXGIFormat::DXGI_FORMAT_BC6H_UF16,
                 DXGIFormat::DXGI_FORMAT_BC6H_SF16,
                     => PixelFormat::R8G8B8,
-                default => throw new \InvalidArgumentException(
+                default => throw new DDSException(
                     \sprintf('%s pixel compression format not supported', $dxt10->dxgiFormat->name)
                 ),
             },
-            default => throw new \InvalidArgumentException(
+            default => throw new DDSException(
                 \sprintf('%s image format not supported', $header->format->fourCC->name)
             ),
         };
@@ -215,6 +228,8 @@ final class DDSDecoder implements DecoderInterface
      * @param TypedStream $stream
      *
      * @return DDSHeader
+     *
+     * @psalm-suppress InvalidScalarArgument
      */
     public static function readDDSHeader(TypedStream $stream): DDSHeader
     {
@@ -275,7 +290,9 @@ final class DDSDecoder implements DecoderInterface
      * @param TypedStream $stream
      * @param class-string<TEnum> $enum
      *
-     * @return array<TEnum>
+     * @return list<TEnum>
+     *
+     * @psalm-suppress all
      */
     private static function uint32flags(TypedStream $stream, string $enum): array
     {

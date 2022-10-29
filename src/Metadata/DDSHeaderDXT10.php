@@ -56,5 +56,6 @@ final class DDSHeaderDXT10
         public readonly ResourceMiscFlag $miscFlag = ResourceMiscFlag::TEXTURECUBE,
         public readonly int $arraySize = 0,
         public readonly AlphaMode $miscFlags2 = AlphaMode::UNKNOWN,
-    ) {}
+    ) {
+    }
 }
