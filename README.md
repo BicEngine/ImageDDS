@@ -1,7 +1,7 @@
 # DDS Image Decoder
 
 <p align="center">
-    <a href="https://github.com/BicEngine/ImageIco/actions"><img src="https://github.com/BicEngine/ImageIco/workflows/build/badge.svg"></a>
+    <a href="https://github.com/BicEngine/ImageDDS/actions"><img src="https://github.com/BicEngine/ImageDDS/workflows/build/badge.svg"></a>
 </p>
 
 ## Requirements
