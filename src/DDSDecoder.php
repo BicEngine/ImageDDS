@@ -8,7 +8,7 @@ use Bic\Binary\Endianness;
 use Bic\Binary\StreamInterface;
 use Bic\Binary\Type;
 use Bic\Binary\TypedStream;
-use Bic\Image\BMP\Exception\DDSException;
+use Bic\Image\DDS\Exception\DDSException;
 use Bic\Image\Compression;
 use Bic\Image\CompressionInterface;
 use Bic\Image\DDS\Metadata\DDSHeaderDXT10;

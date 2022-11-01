@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Bic\Image\DDS\Metadata\DXT10;
 
-use Bic\Image\BMP\Exception\DDSException;
+use Bic\Image\DDS\Exception\DDSException;
 use Bic\Image\DDS\Metadata\DDSFourCC;
 use Bic\Image\DDS\Metadata\DDSPixelFormat;
 use Bic\Image\DDS\Metadata\PixelFormat\Flag as PixelFormatFlag;
